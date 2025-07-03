@@ -1,0 +1,1 @@
+colcon build --merge-install --cmake-args -DCMAKE_UNITY_BUILD=ON --packages-select planning control simulation vehicle

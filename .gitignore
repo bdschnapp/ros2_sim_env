@@ -1,0 +1,6 @@
+*Zone.Identifier
+.idea
+ws/src/simulation/maps/*
+ws/build
+ws/install
+ws/log
