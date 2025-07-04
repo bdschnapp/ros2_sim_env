@@ -20,11 +20,7 @@ RUN apt-get update && \
 # Install extra Python packages
 RUN pip install --no-cache-dir numpy
 
-# Setup workspace
-ENV ROS2_WS=/ros2_ws
-WORKDIR $ROS2_WS
-
-# Copy local workspace into the container
+# Copy local workspace into the container, mark required scripts as executable
 COPY ws/src /ws/src
 COPY ./ros_entrypoint.sh /ros_entrypoint.sh
 RUN chmod +x /ros_entrypoint.sh
@@ -36,13 +32,11 @@ WORKDIR /ws
 RUN ./clean.sh
 RUN . /opt/ros/humble/setup.sh && ./build.sh
 
-# Source the workspace by default
+# Source the workspace by default (added to .bashrc)
 RUN echo 'source /opt/ros/humble/setup.sh' >> ~/.bashrc && \
-    echo 'source /ros2_ws/install/setup.bash' >> ~/.bashrc
+    echo 'source /ws/install/setup.bash' >> ~/.bashrc
 
-# Source ROS and workspace, then run the node
-WORKDIR /ws
-
+# Set environment variables
 ENV RMW_IMPLEMENTATION="rmw_fastrtps_cpp"
 ENV ROS_DISTRO="humble"
 ENV ROS_DOMAIN_ID=0
@@ -51,5 +45,6 @@ ENV ROS_PYTHON_VERSION="3"
 ENV ROS_VERSION="2"
 ENV FASTDDS_BUILTIN_TRANSPORTS="UDPv4"
 
+# Run the node
 ENTRYPOINT ["/ros_entrypoint.sh"]
-CMD ["ros2", "launch", "simulation", "trajectory_planner_node"]
+CMD ["ros2", "launch", "simulation", "matlab_sim_env.launch.py"]

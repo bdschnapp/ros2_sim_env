@@ -31,6 +31,7 @@ setup(
             'vehicle_simulator = simulation.vehicle_simulator:main',
             'pcd_map_publisher = simulation.pcd_map_publisher:main',
             'lidar_simulator = simulation.lidar_simulator:main',
+            'vehicle_trailer_simulator = simulation.vehicle_trailer_simulator:main',
         ],
     },
 )

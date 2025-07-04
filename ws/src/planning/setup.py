@@ -21,6 +21,8 @@ setup(
     entry_points={
         'console_scripts': [
             'simple_trajectory_publisher = planning.simple_trajectory_publisher:main',
+            'path_publisher = planning.path_publisher:main',
+            'trajectory_publisher = planning.trajectory_publisher:main',
         ],
     },
 )
