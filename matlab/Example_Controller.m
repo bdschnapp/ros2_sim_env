@@ -8,6 +8,9 @@
 setenv('ROS_DOMAIN_ID', '0');
 setenv('RMW_IMPLEMENTATION', 'rmw_fastrtps_cpp');
 
+% Only if using Docker:
+% setenv('FASTDDS_BUILTIN_TRANSPORTS','UDPv4');
+
 %% Set up Control Node
 node = ros2node("/control");
 
@@ -33,6 +36,13 @@ control_pub = ros2publisher( ...
     'control/cmd/control_cmd', ...
     'autoware_control_msgs/Control');
 
+%% helper function to extract yaw (heading) from quaternion
+function yaw = quat2yaw(q)
+    % geometry_msgs/Quaternion has fields x, y, z, w
+    % yaw = atan2(2*(w*z + x*y), 1 - 2*(y^2 + z^2));
+    yaw = atan2(2*(q.w*q.z + q.x*q.y), 1 - 2*(q.y^2 + q.z^2));
+end
+
 %% Receive and plot the global path once
 pathMsg = receive(path_sub,  10);    % wait up to 10s for the path
 nPts    = numel(pathMsg.poses);
@@ -48,6 +58,9 @@ hPath    = plot(xs, ys,  'k--','LineWidth',2);
 hTraj    = plot(NaN, NaN,'ro-','LineWidth',2,'DisplayName','Trailer Trajectory');
 hTractor = plot(NaN, NaN,'bs','MarkerSize',10,'MarkerFaceColor','b','DisplayName','Tractor');
 hTrailer = plot(NaN, NaN,'gs','MarkerSize',10,'MarkerFaceColor','g','DisplayName','Trailer');
+oriLen       = 5.0;  % length of the heading indicator
+hTractorOri  = plot([NaN NaN],[NaN NaN],'b-','LineWidth',2);
+hTrailerOri  = plot([NaN NaN],[NaN NaN],'g-','LineWidth',2);
 legend([hPath hTraj hTractor hTrailer], {'Global Path','Trajectory','Tractor','Trailer'});
 xlabel('x [m]'); ylabel('y [m]');
 
@@ -55,10 +68,7 @@ xlabel('x [m]'); ylabel('y [m]');
 while ishghandle(hPath)
     %─── 1) update the planned trajectory ───────────────────────────────
     try
-        while trajectory_sub.NumMessages > 1
-            receive(trajectory_sub, 0);  % dump all but the latest
-        end
-        trajMsg = receive(trajectory_sub, 0);
+        trajMsg = receive(trajectory_sub, 0.1);
         nPts    = numel(trajMsg.points);
         trajX   = zeros(1,nPts);
         trajY   = zeros(1,nPts);
@@ -69,6 +79,7 @@ while ishghandle(hPath)
         set(hTraj, 'XData', trajX, 'YData', trajY);
     catch
         % no new trajectory this cycle
+
     end
 
     %─── 2) update tractor pose and speed ──────────────────────────────
@@ -77,6 +88,17 @@ while ishghandle(hPath)
         x  = tp.pose.position.x;
         y  = tp.pose.position.y;
         set(hTractor, 'XData', x, 'YData', y);
+    catch
+    end
+    try
+        % update tractor heading line
+        yawT = quat2yaw(tp.pose.orientation);
+        x  = tp.pose.position.x;
+        y  = tp.pose.position.y;
+        set(hTractorOri, ...
+            'XData',[x, x+oriLen*cos(yawT)], ...
+            'YData',[y, y+oriLen*sin(yawT)]);
+        dummy = 0;
     catch
     end
     try
@@ -95,6 +117,17 @@ while ishghandle(hPath)
     catch
     end
     try
+        % update tractor heading line
+        yawL = quat2yaw(lp.pose.orientation);
+        xt = lp.pose.position.x;
+        yt = lp.pose.position.y;
+        % update trailer heading line
+        set(hTrailerOri, ...
+            'XData',[xt, xt+oriLen*cos(yawL)], ...
+            'YData',[yt, yt+oriLen*sin(yawL)]);
+    catch
+    end
+    try
         lt = receive(trailer_twist_sub, 0.1);
         vL = lt.twist.linear.x;
     catch
@@ -106,3 +139,4 @@ while ishghandle(hPath)
 
     drawnow limitrate;
 end
+clear;

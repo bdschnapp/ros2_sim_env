@@ -44,7 +44,7 @@ RUN echo 'source /opt/ros/humble/setup.sh' >> ~/.bashrc
 # Set environment variables
 ENV RMW_IMPLEMENTATION="rmw_fastrtps_cpp"
 ENV ROS_DISTRO="humble"
-ENV ROS_DOMAIN_ID=0
+ENV ROS_DOMAIN_ID="0"
 ENV ROS_LOCALHOST_ONLY="0"
 ENV ROS_PYTHON_VERSION="3"
 ENV ROS_VERSION="2"
