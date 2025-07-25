@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch_ros.actions import Node
@@ -27,7 +28,7 @@ def generate_launch_description():
             parameters=[
                 {'num_trajectory_points': 40,
                  'target_velocity': 1.5,
-                 'publish_rate': 0.1}
+                 'publish_rate': 10}
             ]
         ),
 

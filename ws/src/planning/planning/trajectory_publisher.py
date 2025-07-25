@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import rclpy
 from rclpy.node import Node
 from autoware_planning_msgs.msg import Trajectory, TrajectoryPoint
@@ -14,11 +16,13 @@ class TrajectoryPublisher(Node):
         self.declare_parameter('num_trajectory_points', 40)
         self.trajectory_size = int(self.get_parameter('num_trajectory_points').value)
 
-        self.declare_parameter('target_velocity', 1.5)
+        self.declare_parameter('target_velocity', 2.0)
         self.target_velocity = float(self.get_parameter('target_velocity').value)
 
-        self.declare_parameter('publish_rate', 0.1)
+        self.declare_parameter('publish_rate', 10)        # in Hz
         self.publish_rate = float(self.get_parameter('publish_rate').value)
+        timer_period = 1.0 / self.publish_rate              # secondsm, publish rate is in int
+        self.timer = self.create_timer(timer_period, self.publish_trajectory)
 
         self.traj_publisher = self.create_publisher(Trajectory,
                                                     '/planning/scenario_planning/trajectory',
@@ -65,7 +69,7 @@ class TrajectoryPublisher(Node):
         pts = self.path.poses
         M = len(pts)
         N = self.trajectory_size  # 40
-        dt = self.publish_rate  # 0.1
+        dt = 1.0 / self.publish_rate
         v = self.target_velocity  # 1.5 m/s
 
         # 2) build the cumulative arc-length of the path

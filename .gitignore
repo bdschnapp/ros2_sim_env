@@ -4,3 +4,8 @@ ws/src/simulation/maps/*
 ws/build
 ws/install
 ws/log
+
+#build and IDE related files
+*.pyc
+*.pyo
+.vscode

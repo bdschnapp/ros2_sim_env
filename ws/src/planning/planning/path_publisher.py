@@ -21,8 +21,8 @@ class PathPublisher(Node):
         self.cy = self.get_parameter('center_y').value
         self.num_points = int(self.get_parameter('num_points').value)
 
-        self.publisher = self.create_publisher(Path, '/planning/scenario_planning/path', 10)
-        self.timer = self.create_timer(1.0, self.publish_path)
+        self.publisher = self.create_publisher(Path, '/planning/scenario_planning/path', 1)
+        self.timer = self.create_timer(0.1, self.publish_path)
 
     def publish_path(self):
         path = Path()
