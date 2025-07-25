@@ -1,1 +1,2 @@
-colcon build --merge-install --packages-select planning control simulation vehicle
+colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
+
